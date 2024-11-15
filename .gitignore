@@ -10,6 +10,7 @@
 *.tar
 *.pth.tar
 settings
+./idea
 
 
 
