@@ -1,0 +1,10 @@
+teapot
+teddy_bear
+tiger
+tree
+trumpet
+turtle
+umbrella
+violin
+volcano
+wading_bird
