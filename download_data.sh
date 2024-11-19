@@ -1,5 +1,6 @@
 echo "Downloading the Sketchy dataset (it will take some time)"
 python3 src/download_gdrive.py 0B7ISyeE8QtDdTjE1MG9Gcy1kSkE $path_dataset/Sketchy.7z
+echo "Please set variable path_dataset before running the script."
 echo -n "Unzipping it..."
 7z x $path_dataset/Sketchy.7z -o$path_dataset > $path_dataset/garbage.txt
 echo "Done"
