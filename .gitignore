@@ -10,7 +10,8 @@
 *.tar
 *.pth.tar
 settings
-
+.idea
+saveModel
 
 
 # Python gitignore(taken from https://github.com/github/gitignore)

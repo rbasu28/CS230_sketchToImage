@@ -16,21 +16,26 @@ class RunningAverage():
     return self.sum/self.count  
 
 
+def get_last_pth_file():
+    return 'last.pth.tar'
+
+
 def save_checkpoint(state, checkpoint_dir):
-    file_name = 'last.pth.tar'
+    file_name = get_last_pth_file()
     if not os.path.isdir(checkpoint_dir): os.mkdir(checkpoint_dir)
     torch.save(state, os.path.join(checkpoint_dir, file_name))
 
-def load_checkpoint(checkpoint, image_model, sketch_model, domain_model=None, optimizer=None):
-    if not os.path.exists(checkpoint):
-        raise Exception("File {} doesn't exist".format(checkpoint))
-    checkpoint = torch.load(checkpoint)
+def load_checkpoint(checkpoint_path, image_model, sketch_model, domain_model=None, optimizer=None):
+    if not os.path.exists(checkpoint_path):
+        raise Exception("File {} doesn't exist".format(checkpoint_path))
+    checkpoint = torch.load(checkpoint_path)
     print('Loading the models from the end of net iteration %d' % (checkpoint['iteration']))
     image_model.load_state_dict(checkpoint['image_model'])
     sketch_model.load_state_dict(checkpoint['sketch_model'])
-    if domain_model: domain_model.load_state_dict(checkpoint['domain_model'])
+    if domain_model:
+        domain_model.load_state_dict(checkpoint['domain_model'])
     if optimizer:
-      optimizer.load_state_dict(checkpoint['optim_dict'])
+        optimizer.load_state_dict(checkpoint['optim_dict'])
 
 def get_sketch_images_grids(sketches, images, similarity_scores, k, num_display):
 
