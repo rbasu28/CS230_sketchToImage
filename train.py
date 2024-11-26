@@ -26,12 +26,7 @@ class Trainer():
   def train_and_evaluate(self, config, checkpoint=None):
     batch_size = config['batch_size']
     # Support both cuda and apple M1/M2 GPU
-    if torch.cuda.is_available():
-      device = "cuda"
-    elif torch.backends.mps.is_available():
-      device = "mps"
-    else:
-      device = "cpu"
+    device = get_device()
 
     train_dataloader = self.dataloaders.get_train_dataloader(batch_size = batch_size, shuffle=True)
     num_batches = len(train_dataloader)
@@ -132,7 +127,7 @@ class Trainer():
       '''END OF EPOCH'''
       epoch_end_time = time.time()
       print('Epoch %d complete, time taken: %s' % (epoch, str(datetime.timedelta(seconds = int(epoch_end_time - epoch_start_time)))))
-      torch.cuda.empty_cache()
+      empty_cache()
 
       save_checkpoint({'iteration': iteration + epoch * num_batches,
                         'image_model': image_model.state_dict(),

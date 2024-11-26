@@ -12,6 +12,7 @@
 settings
 .idea
 saveModel
+**/.DS_Store
 
 
 # Python gitignore(taken from https://github.com/github/gitignore)

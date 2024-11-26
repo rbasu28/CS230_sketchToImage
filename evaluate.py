@@ -19,7 +19,7 @@ from utils import *
 
 
 def evaluate(batch_size, dataloader_fn, images_model, sketches_model, label2index, k = 5, num_display = 2):
-  device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+  device = get_device()
   images_model = images_model.to(device); sketches_model = sketches_model.to(device)
   images_model.eval(); sketches_model.eval()
 
@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
   args = parser.parse_args()
 
-  device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+  device = get_device()
 
   dataloaders = Dataloaders(args.data)
   image_model = BasicModel().to(device)
@@ -120,3 +120,5 @@ if __name__ == '__main__':
   for i in range(args.num_sketches):
     Image.fromarray(np.uint8(sketches[i] * 255)).save(os.path.join(args.output_dir,'Sketch_%d.png'%(i)))
     Image.fromarray(np.uint8(image_grids[i] * 255)).save(os.path.join(args.output_dir,'Images_%d.png'%(i)))
+
+  empty_cache()

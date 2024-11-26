@@ -19,6 +19,21 @@ class RunningAverage():
 def get_last_pth_file():
     return 'last.pth.tar'
 
+def get_device():
+    if torch.cuda.is_available():
+      return "cuda"
+    elif torch.backends.mps.is_available():
+      return "mps"
+    else:
+      return "cpu"
+
+
+def empty_cache():
+    if torch.cuda.is_available():
+      torch.cuda.empty_cache()
+    elif torch.backends.mps.is_available():
+      torch.mps.empty_cache()
+
 
 def save_checkpoint(state, checkpoint_dir):
     file_name = get_last_pth_file()
