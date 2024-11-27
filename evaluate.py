@@ -37,7 +37,11 @@ def evaluate(batch_size, dataloader_fn, images_model, sketches_model, label2inde
       images, label_indices = batch 
       images = torch.autograd.Variable(images.to(device))
       pred_features = images_model(images)
-      test_images.append(images); image_feature_predictions.append(pred_features); image_label_indices.append(label_indices)  
+      # Move results to CPU before appending
+      test_images.append(images.cpu())
+      image_feature_predictions.append(pred_features.cpu())
+      image_label_indices.append(label_indices.cpu())
+
   image_feature_predictions = torch.cat(image_feature_predictions,dim=0)
   image_label_indices = torch.cat(image_label_indices,dim=0)
   test_images = torch.cat(test_images, dim = 0)
@@ -55,10 +59,13 @@ def evaluate(batch_size, dataloader_fn, images_model, sketches_model, label2inde
   sketch_feature_predictions = []; sketch_label_indices = []; test_sketches = []
   with torch.no_grad():
     for iteration, batch in enumerate(sketches_dataloader):
-      sketches, label_indices = batch 
+      sketches, label_indices = batch
       sketches = torch.autograd.Variable(sketches.to(device))
       pred_features = sketches_model(sketches)
-      test_sketches.append(sketches); sketch_feature_predictions.append(pred_features); sketch_label_indices.append(label_indices)
+      # Move results to CPU before appending
+      test_sketches.append(sketches.cpu())
+      sketch_feature_predictions.append(pred_features.cpu())
+      sketch_label_indices.append(label_indices.cpu())
 
   sketch_feature_predictions = torch.cat(sketch_feature_predictions,dim=0)
   sketch_label_indices = torch.cat(sketch_label_indices,dim=0)
