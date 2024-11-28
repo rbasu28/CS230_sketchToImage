@@ -59,7 +59,11 @@ def get_sketch_images_grids(sketches, images, similarity_scores, k, num_display)
     return None, None
   num_sketches = sketches.shape[0]
   np.random.seed(234)  # used to display consistent samples output.
-  indices = np.random.choice(num_sketches, num_display) if num_sketches > num_display else np.arange(num_sketches)
+  if num_sketches < num_display:
+    num_display = num_sketches
+    indices = np.arange(num_sketches)
+  else:
+    indices = np.random.choice(num_sketches, num_display)
 
   cur_sketches = sketches[indices]; cur_similarities = similarity_scores[indices]
   top_k_similarity_indices  = np.flip(np.argsort(cur_similarities, axis = 1)[:, -k:], axis = 1).copy()

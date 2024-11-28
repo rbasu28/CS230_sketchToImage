@@ -85,6 +85,6 @@ def show_output_internal(dirs, times, images, sketches, start_index, batch_size)
 
 if __name__ == "__main__":
     show_output_all("output", 5, batch_size=10)
-    show_output_concise("output", 5, batch_size=10)
+    # show_output_concise("output", 5, batch_size=10)
 
 

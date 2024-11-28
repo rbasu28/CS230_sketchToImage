@@ -66,11 +66,11 @@ if __name__ == "__main__":
     parser.add_argument('--source_photo',
                         help='Source photo files directory path. Directory should contain SketchDatabase dataset.',
                         required=False,
-                        default='/Users/minglirui/train_data/rendered_256x256/256x256/photo/tx_000000000000')
+                        default='/home/ec2-user/train_data/256x256/photo/tx_000000000000')
     parser.add_argument('--source_sketch',
                         help='Source sketch files directory path. Directory should contain SketchDatabase dataset.',
                         required=False,
-                        default='/Users/minglirui/train_data/rendered_256x256/256x256/sketch/tx_000000000000')
+                        default='/home/ec2-user/train_data/256x256/sketch/tx_000000000000')
     parser.add_argument('--target',
                         help='Target directory path where the test/train data will copy to.',
                         required=False,

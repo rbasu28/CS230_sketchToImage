@@ -29,4 +29,4 @@ def prepare_data(source, target, count):
             print(f"File {source_file} does not exist. Skipping.")
 
 # Example usage:
-prepare_data("/Users/minglirui/train_data/album_covers_512", "album_photos", 5000)
+prepare_data("/Users/minglirui/train_data/album_covers_512", "album_photos", 300)

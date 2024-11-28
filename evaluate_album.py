@@ -110,7 +110,7 @@ if __name__ == '__main__':
   parser.add_argument('--test_photos_dir', help='Album photos directory', required=True)
   parser.add_argument('--test_sketches_dir', help='Album sketches directory', required=True)
   parser.add_argument('--num_images', type=int, help='Number of random images to output for every sketch', default = 5)
-  parser.add_argument('--num_sketches', type=int, help='Number of random sketches to output', default = 3)
+  parser.add_argument('--num_sketches', type=int, help='Number of random sketches to output', default = 20)
   parser.add_argument('--batch_size', type=int, help='Batch size to process the test sketches/photos', default = 1)
   parser.add_argument('--output_dir', help='Directory to save output sketch and images', default = 'outputs')
 
@@ -129,7 +129,7 @@ if __name__ == '__main__':
   if not os.path.isdir(args.output_dir):
     os.mkdir(args.output_dir)
 
-  for i in range(args.num_sketches):
+  for i in range(len(sketches)):
     Image.fromarray(np.uint8(sketches[i] * 255)).save(os.path.join(args.output_dir,'Sketch_%d.png'%(i)))
     Image.fromarray(np.uint8(image_grids[i] * 255)).save(os.path.join(args.output_dir,'Images_%d.png'%(i)))
 
