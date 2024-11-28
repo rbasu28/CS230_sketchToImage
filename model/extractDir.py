@@ -10,8 +10,9 @@ def extract_folder_names(root_dir, output_file):
                 file.write(f"{dirname}\n")
 
 # Specify the root directory and the output file
-root_directory = 'C:/Users/rub/Desktop/Stanford/CS230/Project/Zero-Shot-Sketch-Based-Image-Retrieval-master/Zero-Shot-Sketch-Based-Image-Retrieval-master/Dataset/photo'
-output_filename = 'C:/Users/rub/Desktop/Stanford/CS230/Project/Zero-Shot-Sketch-Based-Image-Retrieval-master/Zero-Shot-Sketch-Based-Image-Retrieval-master/Dataset/train_labels.txt'
+root_directory = 'Dataset/photos'
+output_filename = 'Dataset/train_labels.txt'
+# /Users/minglirui/train_data/rendered_256x256/256x256/photo/tx_000000000000
 
 # Extract folder names and write to the text file
 extract_folder_names(root_directory, output_filename)

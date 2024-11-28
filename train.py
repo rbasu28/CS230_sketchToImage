@@ -27,6 +27,7 @@ class Trainer():
     batch_size = config['batch_size']
     # Support both cuda and apple M1/M2 GPU
     device = get_device()
+    print(f'Train on {device}')
 
     train_dataloader = self.dataloaders.get_train_dataloader(batch_size = batch_size, shuffle=True)
     num_batches = len(train_dataloader)
