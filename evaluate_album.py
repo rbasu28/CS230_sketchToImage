@@ -13,16 +13,16 @@ import torch
 import torch.nn as nn
 
 from model.net import BasicModel 
-from model.dataloader import Dataloaders
+from model.dataloader import AlbumDataloaders, AlbumTestDataset
 from utils import *
 
 
-
-def evaluate(batch_size, dataloader_fn, images_model, sketches_model, label2index, k = 5, num_display = 2):
+def evaluate(batch_size, dataloader_fn, images_model, sketches_model, k = 5, num_display = 2):
   device = get_device()
   print(f'Evaluate on {device}')
-  images_model = images_model.to(device); sketches_model = sketches_model.to(device)
-  images_model.eval(); sketches_model.eval()
+  images_model, sketches_model = images_model.to(device), sketches_model.to(device)
+  images_model.eval()
+  sketches_model.eval()
 
   images_dataloader = dataloader_fn(batch_size = batch_size, section = 'photos', shuffle = False)
   sketches_dataloader = dataloader_fn(batch_size = batch_size, section = 'sketches', shuffle = False)
@@ -32,19 +32,20 @@ def evaluate(batch_size, dataloader_fn, images_model, sketches_model, label2inde
 
   start_time = time.time()
 
-  image_feature_predictions = []; image_label_indices = []; test_images = []
+  image_feature_predictions, test_images, test_image_ids = [], [], []
   with torch.no_grad():
     for iteration, batch in enumerate(images_dataloader):
-      images, label_indices = batch 
+      images, file_ids = batch
       images = torch.autograd.Variable(images.to(device))
       pred_features = images_model(images)
       # Move results to CPU before appending
       test_images.append(images.cpu())
       image_feature_predictions.append(pred_features.cpu())
-      image_label_indices.append(label_indices.cpu())
+      test_image_ids.append(file_ids.cpu())
+      # image_label_indices.append(label_indices.cpu())
 
   image_feature_predictions = torch.cat(image_feature_predictions,dim=0)
-  image_label_indices = torch.cat(image_label_indices,dim=0)
+  test_image_ids = torch.cat(test_image_ids,dim=0)
   test_images = torch.cat(test_images, dim = 0)
 
   end_time = time.time()
@@ -57,19 +58,19 @@ def evaluate(batch_size, dataloader_fn, images_model, sketches_model, label2inde
 
   start_time = time.time()
 
-  sketch_feature_predictions = []; sketch_label_indices = []; test_sketches = []
+  sketch_feature_predictions, test_sketches, test_sketch_ids = [], [], []
   with torch.no_grad():
     for iteration, batch in enumerate(sketches_dataloader):
-      sketches, label_indices = batch
+      sketches, sketches_ids = batch
       sketches = torch.autograd.Variable(sketches.to(device))
       pred_features = sketches_model(sketches)
       # Move results to CPU before appending
       test_sketches.append(sketches.cpu())
       sketch_feature_predictions.append(pred_features.cpu())
-      sketch_label_indices.append(label_indices.cpu())
+      test_sketch_ids.append(sketches_ids.cpu())
 
   sketch_feature_predictions = torch.cat(sketch_feature_predictions,dim=0)
-  sketch_label_indices = torch.cat(sketch_label_indices,dim=0)
+  test_sketch_ids = torch.cat(test_sketch_ids, dim=0)
   test_sketches = torch.cat(test_sketches, dim = 0)
 
   end_time = time.time()
@@ -79,22 +80,23 @@ def evaluate(batch_size, dataloader_fn, images_model, sketches_model, label2inde
   '''mAP calculation'''
   image_feature_predictions = image_feature_predictions.cpu().numpy() 
   sketch_feature_predictions = sketch_feature_predictions.cpu().numpy() 
-  image_label_indices = image_label_indices.cpu().numpy() 
-  sketch_label_indices = sketch_label_indices.cpu().numpy() 
+  test_sketch_ids = test_sketch_ids.cpu().numpy()
+  test_image_ids = test_image_ids.cpu().numpy()
 
   distance = cdist(sketch_feature_predictions, image_feature_predictions, 'minkowski')
   similarity = 1.0/distance 
 
-  is_correct_label_index = 1 * (np.expand_dims(sketch_label_indices, axis = 1) == np.expand_dims(image_label_indices, axis = 0))
+  # is_correct_label_index = 1 * (np.expand_dims(sketch_label_indices, axis = 1) == np.expand_dims(image_label_indices, axis = 0))
 
   average_precision_scores = []
-  for i in range(sketch_label_indices.shape[0]):
-    average_precision_scores.append(average_precision_score(is_correct_label_index[i], similarity[i])) 
+  for i in range(sketch_feature_predictions.shape[0]):
+    hit_target = is_target_in_list(test_sketch_ids[i], test_image_ids, similarity[i], k)
+    average_precision_scores.append(average_precision_score(hit_target, similarity[i]))
   average_precision_scores = np.array(average_precision_scores)
 
-  index2label = {v: k for k, v in label2index.items()}
-  for cls in set(sketch_label_indices):
-    print('Class: %s, mAP: %f' % (index2label[cls], average_precision_scores[sketch_label_indices == cls].mean()))
+  # index2label = {v: k for k, v in label2index.items()}
+  # for cls in set(sketch_label_indices):
+  #   print('Class: %s, mAP: %f' % (index2label[cls], average_precision_scores[sketch_label_indices == cls].mean()))
 
   mean_average_precision = average_precision_scores.mean()
 
@@ -103,14 +105,12 @@ def evaluate(batch_size, dataloader_fn, images_model, sketches_model, label2inde
   return sketches, image_grids, mean_average_precision
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser(description='Evaluation of SBIR')
-  parser.add_argument('--model', help='Model checkpoint path')
-  parser.add_argument('--data', help='Data directory path. Directory should contain two folders - sketches and photos, along with 2 .txt files for the labels', required = True)
-  parser.add_argument('--train_labels', help='train label file name', required=False, default='train_labels.txt')
-  parser.add_argument('--test_labels', help='test label file name', required=False, default='test_labels.txt')
-  parser.add_argument('--train_embedding', help='train embedding file name', required=False, default='test_embeddings.npy')
-  parser.add_argument('--num_images', type=int, help='Number of random images to output for every sketch', default = 0)
-  parser.add_argument('--num_sketches', type=int, help='Number of random sketches to output', default = 0)
+  parser = argparse.ArgumentParser(description='Evaluation of SBIR with Album dataset')
+  parser.add_argument('--model', help='Trained model path')
+  parser.add_argument('--test_photos_dir', help='Album photos directory', required=True)
+  parser.add_argument('--test_sketches_dir', help='Album sketches directory', required=True)
+  parser.add_argument('--num_images', type=int, help='Number of random images to output for every sketch', default = 5)
+  parser.add_argument('--num_sketches', type=int, help='Number of random sketches to output', default = 3)
   parser.add_argument('--batch_size', type=int, help='Batch size to process the test sketches/photos', default = 1)
   parser.add_argument('--output_dir', help='Directory to save output sketch and images', default = 'outputs')
 
@@ -118,11 +118,12 @@ if __name__ == '__main__':
 
   device = get_device()
 
-  dataloaders = Dataloaders(args.data, args.train_labels, args.train_embedding, args.test_labels)
+  dataloaders = AlbumDataloaders(args.test_photos_dir, args.test_sketches_dir)
   image_model = BasicModel().to(device)
   sketch_model = BasicModel().to(device) 
-  if args.model: load_checkpoint(args.model, image_model, sketch_model)  
-  sketches, image_grids, test_mAP = evaluate(args.batch_size, dataloaders.get_test_dataloader, image_model, sketch_model, dataloaders.test_dict, k = args.num_images, num_display = args.num_sketches)
+  if args.model:
+    load_checkpoint(args.model, image_model, sketch_model)
+  sketches, image_grids, test_mAP = evaluate(args.batch_size, dataloaders.get_test_dataloader, image_model, sketch_model, k = args.num_images, num_display = args.num_sketches)
   print('Average test mAP: ', test_mAP)
 
   if not os.path.isdir(args.output_dir):

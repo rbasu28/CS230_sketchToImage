@@ -13,6 +13,7 @@ settings
 .idea
 saveModel
 **/.DS_Store
+album
 
 
 # Python gitignore(taken from https://github.com/github/gitignore)

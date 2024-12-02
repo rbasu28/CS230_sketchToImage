@@ -119,12 +119,13 @@ class SketchyTrainDataset(torch.utils.data.Dataset):
 
 
 class Dataloaders:
-  def __init__(self, data_dir):
-    self.train_labels = open(os.path.join(data_dir, 'train_labels.txt')).read().splitlines() 
+  def __init__(self, data_dir, train_labels, train_embedding, test_labels):
+    print(f"test_labels:{train_labels}, train_embedding={train_embedding}, test_labels={test_labels}")
+    self.train_labels = open(os.path.join(data_dir, train_labels)).read().splitlines()
     self.train_dict = label2index(self.train_labels)
-    self.train_label_embeddings = np.load(os.path.join(data_dir,'train_embeddings.npy'))
+    self.train_label_embeddings = np.load(os.path.join(data_dir, train_embedding))
 
-    self.test_labels = open(os.path.join(data_dir, 'test_labels.txt')).read().splitlines() 
+    self.test_labels = open(os.path.join(data_dir, test_labels)).read().splitlines()
     self.test_dict = label2index(self.test_labels)
     self.test_label_embeddings = np.load(os.path.join(data_dir,'test_embeddings.npy')) 
     
@@ -175,3 +176,55 @@ def get_train_transforms():
 
 def get_test_transforms():
   return T.Compose([T.ToTensor()])
+
+
+def get_file_list(data_dir):
+  filenames = []
+  ext = "*.jpg"
+  cur_label_filenames =glob.glob(os.path.join(data_dir,ext))
+  filenames.extend(cur_label_filenames)
+  return filenames
+
+
+class AlbumTestDataset(torch.utils.data.Dataset):
+  def __init__(self, data_dir, transforms=None):
+    self.transforms = transforms
+    self.filenames = get_file_list(data_dir)
+
+  def __getitem__(self, idx):
+    '''
+    Reads image/sketch at 'idx', with its label index
+    '''
+
+    '''GET FILENAME AND LABEL'''
+    filename = self.filenames[idx]
+    file_id = int(filename.split("/")[-1].split('.')[0])
+
+    image = Image.open(filename).convert('RGB').resize((224, 224))
+
+    '''TRANSFORMS'''
+    if self.transforms:
+      image = self.transforms(image)
+
+    return image, file_id
+
+  def __len__(self):
+    return len(self.filenames)
+
+
+class AlbumDataloaders:
+  def __init__(self, album_images, album_sketches):
+    self.test_album_images = AlbumTestDataset(album_images, transforms=get_test_transforms())
+    self.test_album_sketches = AlbumTestDataset(album_sketches, transforms=get_test_transforms())
+
+  def get_test_dataloader(self, batch_size, section, shuffle = False):
+    if section == 'photos':
+      dataset = self.test_album_images
+    else:
+      dataset = self.test_album_sketches
+
+    test_dataloader = torch.utils.data.DataLoader(dataset,
+                                                  batch_size = batch_size,
+                                                  shuffle = shuffle,
+                                                  num_workers = 0)
+    return test_dataloader

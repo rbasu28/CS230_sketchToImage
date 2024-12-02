@@ -18,8 +18,8 @@ from evaluate import evaluate
 from utils import *
 
 class Trainer():
-  def __init__(self, data_dir):
-    self.dataloaders = Dataloaders(data_dir)
+  def __init__(self, data_dir, train_labels, train_embedding, test_labels):
+    self.dataloaders = Dataloaders(data_dir, train_labels, train_embedding, test_labels)
     self.train_dict = self.dataloaders.train_dict
     self.test_dict = self.dataloaders.test_dict
 
@@ -44,10 +44,10 @@ class Trainer():
 
     criterion = nn.TripletMarginLoss(margin = 1.0, p = 2)
     domain_criterion = nn.BCELoss()
-
+    done_iteration, done_epoch = 0, 0
     if checkpoint:
       checkpoint_path = os.path.join(config['checkpoint_dir'], get_last_pth_file())
-      load_checkpoint(checkpoint_path, image_model, sketch_model, domain_net, optimizer)
+      done_iteration, done_epoch = load_checkpoint(checkpoint_path, image_model, sketch_model, domain_net, optimizer)
 
     print('Training...')
 
@@ -130,7 +130,11 @@ class Trainer():
       print('Epoch %d complete, time taken: %s' % (epoch, str(datetime.timedelta(seconds = int(epoch_end_time - epoch_start_time)))))
       empty_cache()
 
-      save_checkpoint({'iteration': iteration + epoch * num_batches,
+      # Estimate done epoch if it is not recorded.
+      done_epoch = done_iteration // num_batches if done_epoch == -1 else done_epoch
+
+      save_checkpoint({'iteration': done_iteration + epoch * num_batches,
+                        'epoch': done_epoch + epoch,
                         'image_model': image_model.state_dict(),
                         'sketch_model': sketch_model.state_dict(),
                         'domain_model': domain_net.state_dict(),
@@ -146,6 +150,9 @@ if __name__ == '__main__':
                       help='Data directory path. Directory should contain two folders - sketches and photos, along with 2 .txt files for the labels',
                       required=False,
                       default="Dataset/")
+  parser.add_argument('--train_labels', help='train label file name', required=False, default='train_labels.txt')
+  parser.add_argument('--train_embedding', help='train embedding file name', required=False, default='test_embeddings.npy')
+  parser.add_argument('--test_labels', help='test label file name', required=False, default='test_labels.txt')
   parser.add_argument('--batch_size', type=int, help='Batch size to process the train sketches/photos', required=False, default=32)
   parser.add_argument('--checkpoint_dir', help='Directory to save checkpoints', required=False, default='saveModel')
   parser.add_argument('--disable_checkpoint',
@@ -162,5 +169,5 @@ if __name__ == '__main__':
   args = parser.parse_args()
   # Load from checkpoint if it is not disabled.
   checkpoint = True if os.path.exists(os.path.join(args.checkpoint_dir, get_last_pth_file())) and not args.disable_checkpoint else False
-  trainer = Trainer(args.data_dir)
+  trainer = Trainer(args.data_dir, args.train_labels, args.train_embedding, args.test_labels)
   trainer.train_and_evaluate(vars(args), checkpoint)
