@@ -1,13 +1,29 @@
-import matplotlib.pyplot as plt
-from PIL import Image
 import os
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+from PIL import Image
 
 
-def show_output(dirs, times, start_index=0, batch_size=8):
+def show_output_all(dirs, times, start_index=0, batch_size=8):
+    # Group images by prefix (Images_* or Sketch_*)
+    images = [f for f in os.listdir(dirs) if f.startswith("Images_")]
+    sketches = [f for f in os.listdir(dirs) if f.startswith("Sketch_")]
+    show_output_internal(dirs, times, images, sketches, start_index, batch_size)
+
+
+def show_output_concise(dirs, times, start_index=0, batch_size=8):
+    file_ids = [0, 13, 14, 18, 19, 28]
+    images = [f'Images_{i}.png' for i in file_ids]
+    sketches = [f'Sketch_{i}.png' for i in file_ids]
+    show_output_internal(dirs, times, images, sketches, start_index, batch_size)
+
+
+def show_output_internal(dirs, times, images, sketches, start_index, batch_size):
     """
     Display images from the specified directory with width adjustments for each type,
-    showing each pair of Images_* and Sketch_* in a single row, resizing Sketch_* to match
-    the height of Images_*, and automatically showing the next batch after the window is closed.
+    showing Sketch_* on the left and Images_* on the right in a single row,
+    resizing Sketch_* to match the height of Images_*, and automatically
+    showing the next batch after the window is closed.
 
     Args:
         dirs (str): Directory containing the images.
@@ -15,10 +31,6 @@ def show_output(dirs, times, start_index=0, batch_size=8):
         start_index (int, optional): Starting index for the images. Default is 0.
         batch_size (int, optional): Number of rows per batch. Default is 8 rows.
     """
-    # Group images by prefix (Images_* or Sketch_*)
-    images = [f for f in os.listdir(dirs) if f.startswith("Images_")]
-    sketches = [f for f in os.listdir(dirs) if f.startswith("Sketch_")]
-
     # Sort files to maintain order
     images.sort()
     sketches.sort()
@@ -38,7 +50,7 @@ def show_output(dirs, times, start_index=0, batch_size=8):
         num_rows = len(current_images)
 
         # Create the figure
-        fig, axes = plt.subplots(num_rows, 2, figsize=(12, num_rows * 3))
+        fig, axes = plt.subplots(num_rows, 2, width_ratios=[1, times], frameon=True)
 
         # Handle single row case for proper axis handling
         if num_rows == 1:
@@ -52,27 +64,27 @@ def show_output(dirs, times, start_index=0, batch_size=8):
             img = Image.open(img_path)
             sketch = Image.open(sketch_path)
 
-            # Resize Sketch_* to match the height of Images_*
-            img_width, img_height = img.size
-            sketch_width, sketch_height = sketch.size
-            aspect_ratio = sketch_width / sketch_height
-            new_sketch_width = int(img_height * aspect_ratio)
-            sketch = sketch.resize((new_sketch_width, img_height), Image.LANCZOS)
-
-            # Display Images_*
-            axes[idx][0].imshow(img)
+            # Display Sketch_* on the left
+            axes[idx][0].imshow(sketch)
             axes[idx][0].axis('off')
-            axes[idx][0].set_title(img_name, pad=2)  # Reduced padding
 
-            # Display resized Sketch_*
-            axes[idx][1].imshow(sketch)
+            # Add border around sketch subplot
+            axes[idx][0].add_patch(Rectangle(
+                (0, 0), 1, 1, transform=axes[idx][0].transAxes,
+                linewidth=2, edgecolor='blue', facecolor='none'
+            ))
+            # Display Images_* on the right
+            axes[idx][1].imshow(img)
             axes[idx][1].axis('off')
-            axes[idx][1].set_title(sketch_name, pad=2)  # Reduced padding
+            # axes[idx][1].set_title(img_name, pad=0.1)  # Reduced padding
 
-        plt.tight_layout(pad=1.0, h_pad=1.0)  # Reduce padding between rows and elements
+        plt.subplots_adjust(wspace=0, hspace=0)
+        plt.tight_layout(pad=0.1, h_pad=0.1)  # Reduce padding between rows and elements
         plt.show(block=True)  # Display and wait for the window to close
 
 
 if __name__ == "__main__":
-    show_output("output", 5, batch_size=3)
+    show_output_all("output", 5, batch_size=10)
+    show_output_concise("output", 5, batch_size=10)
+
 

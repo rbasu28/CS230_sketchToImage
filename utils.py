@@ -43,7 +43,7 @@ def save_checkpoint(state, checkpoint_dir):
 def load_checkpoint(checkpoint_path, image_model, sketch_model, domain_model=None, optimizer=None):
     if not os.path.exists(checkpoint_path):
         raise Exception("File {} doesn't exist".format(checkpoint_path))
-    checkpoint = torch.load(checkpoint_path)
+    checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
     print(f'Loading the models from the end of net iteration: {checkpoint['iteration']}, epoch: {checkpoint.get("epoch", -1)} (-1 means not saved)')
     image_model.load_state_dict(checkpoint['image_model'])
     sketch_model.load_state_dict(checkpoint['sketch_model'])
@@ -58,6 +58,7 @@ def get_sketch_images_grids(sketches, images, similarity_scores, k, num_display)
   if num_display == 0 or k == 0:
     return None, None
   num_sketches = sketches.shape[0]
+  np.random.seed(234)  # used to display consistent samples output.
   indices = np.random.choice(num_sketches, num_display) if num_sketches > num_display else np.arange(num_sketches)
 
   cur_sketches = sketches[indices]; cur_similarities = similarity_scores[indices]
@@ -69,6 +70,7 @@ def get_sketch_images_grids(sketches, images, similarity_scores, k, num_display)
   list_of_image_grids = [np.transpose(make_grid(matched_images[i], nrow = k).cpu().numpy(), (1,2,0)) for i in range(num_display)]
 
   return list_of_sketches, list_of_image_grids
+
 
 def is_target_in_list(sketch_id, test_image_ids, similarity_scores, k):
     # todo, implement
