@@ -44,7 +44,7 @@ def load_checkpoint(checkpoint_path, image_model, sketch_model, domain_model=Non
     if not os.path.exists(checkpoint_path):
         raise Exception("File {} doesn't exist".format(checkpoint_path))
     checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
-    print(f'Loading the models from the end of net iteration: {checkpoint['iteration']}, epoch: {checkpoint.get("epoch", -1)} (-1 means not saved)')
+    print(f"Loading the models from the end of net iteration: {checkpoint['iteration']}, epoch: {checkpoint.get('epoch', -1)} (-1 means not saved)")
     image_model.load_state_dict(checkpoint['image_model'])
     sketch_model.load_state_dict(checkpoint['sketch_model'])
     if domain_model:

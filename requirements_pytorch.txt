@@ -1,0 +1,3 @@
+smart_open
+Pillow
+scikit_learn

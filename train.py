@@ -51,7 +51,7 @@ class Trainer():
 
     print('Training...')
 
-    for epoch in range(config['epochs']):
+    for epoch in range(1, config['epochs'] + 1):
       accumulated_triplet_loss = RunningAverage()
       accumulated_iteration_time = RunningAverage()
       accumulated_image_domain_loss = RunningAverage()
