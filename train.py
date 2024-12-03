@@ -140,6 +140,15 @@ class Trainer():
                         'domain_model': domain_net.state_dict(),
                         'optim_dict': optimizer.state_dict()},
                       checkpoint_dir=config['checkpoint_dir'])
+
+      cur_epoch = done_epoch + epoch
+      if cur_epoch % 5 == 0:
+        # save model for every 5 iteration
+        import shutil
+        source_pth = os.path.join(config['checkpoint_dir'], "last.pth.tar")
+        target_pth = os.path.join(config['checkpoint_dir'], "saved", f"epoch.{cur_epoch}.pth.tar")
+        shutil.copyfile(source_pth, target_pth)
+        print(f'Copied {source_pth} to {target_pth}')
       print('Saved epoch!')
       print('\n\n\n')
 
