@@ -119,7 +119,7 @@ class Trainer():
 
         if iteration % config['print_every'] == 0:
           eta_cur_epoch = str(datetime.timedelta(seconds = int(accumulated_iteration_time() * (num_batches - iteration))))
-          print(datetime.datetime.now(pytz.timezone('America/Los_Angeles')).replace(microsecond = 0), end = ' ')
+          print(datetime.datetime.now(pytz.timezone('America/Los_Angeles')).replace(microsecond = 0), end = ' ', flush=True)
 
           print('Epoch: %d [%d / %d] ; eta: %s' % (epoch, iteration, num_batches, eta_cur_epoch))
           print('Average Triplet loss: %f(%f);' % (triplet_loss, accumulated_triplet_loss()))
@@ -142,7 +142,7 @@ class Trainer():
                       checkpoint_dir=config['checkpoint_dir'])
 
       cur_epoch = done_epoch + epoch
-      if cur_epoch % 5 == 0:
+      if cur_epoch % 2 == 0:
         # save model for every 5 iteration
         import shutil
         source_pth = os.path.join(config['checkpoint_dir'], "last.pth.tar")
