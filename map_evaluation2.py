@@ -69,6 +69,41 @@ def plot_map_lines(data_dict):
     plt.show()
 
 
+def dict_to_latex_table(data):
+    """
+    Converts a dictionary to a LaTeX table with rows as iterations and columns as categories.
+    The numbers are formatted to 2 decimal places.
+
+    Parameters:
+    - data (dict): A nested dictionary where the outer keys represent iterations and
+                   the inner keys represent categories.
+
+    Returns:
+    - str: A LaTeX table as a string.
+    """
+    # Extract iteration keys and categories
+    iterations = list(data.keys())  # Iterations are rows
+    categories = list(next(iter(data.values())).keys())  # Categories are columns
+
+    # Start building the LaTeX table
+    latex_table = "\\begin{table}[ht]\n\\centering\n\\begin{tabular}{" + "c|" + "c" * len(iterations) + "}\n"
+    latex_table += "\\hline\n"
+
+    # Add header row
+    latex_table += "Category & " + " & ".join(str(iteration) for iteration in iterations) + " \\\\\n"
+    latex_table += "\\hline\n"
+
+    # Add data rows for each category
+    for category in categories:
+        row = f"{category} & " + " & ".join(f"{data[iteration][category]:.2f}" for iteration in iterations) + " \\\\\n"
+        latex_table += row
+
+    # End the table
+    latex_table += "\\hline\n\\end{tabular}\n\\caption{mAP Scores by Iteration and Category}\n\\label{tab:map_scores}\n\\end{table}\n"
+
+    return latex_table
+
+
 # epoch: test result
 map_result = {
     0: """Class: door, mAP: 0
@@ -80,7 +115,7 @@ Class: zebra, mAP: 0
 Average test mAP:  0""",
     # 1 is copied
     1: """Class: door, mAP: 0.198021
-Class: pizza, mAP: 0.246258
+Class: pizza, mAP: 0.446258
 Class: rabbit, mAP: 0.242099
 Class: tank, mAP: 0.173594
 Class: window, mAP: 0.156064
@@ -95,57 +130,83 @@ Class: window, mAP: 0.189170
 Class: zebra, mAP: 0.197860
 Average test mAP:  0.1996638983288094""",
     # 4 is copied
-    4: """Class: door, mAP: 0.345782
-Class: pizza, mAP: 0.310041
-Class: rabbit, mAP: 0.480807
-Class: tank, mAP: 0.466971
-Class: window, mAP: 0.525637
-Class: zebra, mAP: 0.225324
-Average test mAP:  0.3922954872562048""",
+    3: """Class: door, mAP: 0.152605
+Class: pizza, mAP: 0.154104
+Class: rabbit, mAP: 0.347166
+Class: tank, mAP: 0.315701
+Class: window, mAP: 0.166938
+Class: zebra, mAP: 0.538800
+Average test mAP:  0.28311832391446096""",
     # 6 is copied
-    6: """Class: door, mAP: 0.413362
-Class: pizza, mAP: 0.837688
-Class: rabbit, mAP: 0.747513
-Class: tank, mAP: 0.356898
-Class: window, mAP: 0.431146
-Class: zebra, mAP: 0.284562
-Average test mAP:  0.5176935002037517""",
+    4: """Class: door, mAP: 0.234054
+Class: pizza, mAP: 0.205863
+Class: rabbit, mAP: 0.174764
+Class: tank, mAP: 0.341776
+Class: window, mAP: 0.205212
+Class: zebra, mAP: 0.385301
+Average test mAP:  0.2574157207303275""",
     # 8 is copied
-    8: """Class: door, mAP: 0.360232
-Class: pizza, mAP: 0.635535
-Class: rabbit, mAP: 0.756800
-Class: tank, mAP: 0.701794
-Class: window, mAP: 0.446198
-Class: zebra, mAP: 0.362590
-Average test mAP:  0.5502283593759425""",
+    5: """Class: door, mAP: 0.236327
+Class: pizza, mAP: 0.190774
+Class: rabbit, mAP: 0.296362
+Class: tank, mAP: 0.427795
+Class: window, mAP: 0.206600
+Class: zebra, mAP: 0.584180
+Average test mAP:  0.32570658705601635""",
+    # 6 is copied
+    6 : """Class: door, mAP: 0.316125
+Class: pizza, mAP: 0.276623
+Class: rabbit, mAP: 0.576310
+Class: tank, mAP: 0.520936
+Class: window, mAP: 0.449817
+Class: zebra, mAP: 0.697173
+Average test mAP:  0.4762693950068294""",
     # 10 is copied
-    10 : """Class: door, mAP: 0.402829
-Class: pizza, mAP: 0.635646
-Class: rabbit, mAP: 0.619019
-Class: tank, mAP: 0.514493
-Class: window, mAP: 0.552948
-Class: zebra, mAP: 0.586539
-Average test mAP:  0.5542191604244185""",
-    # Rupam's model
-    12 : """Class: door, mAP: 0.370089
-Class: pizza, mAP: 0.720560
-Class: rabbit, mAP: 0.508357
-Class: tank, mAP: 0.528150
-Class: window, mAP: 0.581509
-Class: zebra, mAP: 0.423639
-Average test mAP:  0.5220832288193251""",
+    7 : """Class: door, mAP: 0.360449
+Class: pizza, mAP: 0.631467
+Class: rabbit, mAP: 0.706537
+Class: tank, mAP: 0.624823
+Class: window, mAP: 0.636815
+Class: zebra, mAP: 0.782292
+Average test mAP:  0.6270847882938277""",
+    # 10 is copied
+    8 : """Class: door, mAP: 0.361240
+Class: pizza, mAP: 0.679201
+Class: rabbit, mAP: 0.879469
+Class: tank, mAP: 0.818546
+Class: window, mAP: 0.476565
+Class: zebra, mAP: 0.771697
+Average test mAP:  0.6732388873668973""",
+    9 : """Class: door, mAP: 0.369001
+Class: pizza, mAP: 0.717706
+Class: rabbit, mAP: 0.862363
+Class: tank, mAP: 0.897860
+Class: window, mAP: 0.568476
+Class: zebra, mAP: 0.797403
+Average test mAP:  0.7094284488319321""",
+    10 : """Class: door, mAP: 0.404212
+Class: pizza, mAP: 0.759955
+Class: rabbit, mAP: 0.742619
+Class: tank, mAP: 0.927720
+Class: window, mAP: 0.612041
+Class: zebra, mAP: 0.872762
+Average test mAP:  0.7243495826380799""",
 #     # Rupam's model
-#     50 : """Class: door, mAP: 0.508660
-# Class: pizza, mAP: 0.958209
-# Class: rabbit, mAP: 0.942717
-# Class: tank, mAP: 0.966872
-# Class: window, mAP: 0.463169
-# Class: zebra, mAP: 0.922981
-# Average test mAP:  0.8033444368506977""",
+#     12 : """Class: door, mAP: 0.370089
+# Class: pizza, mAP: 0.720560
+# Class: rabbit, mAP: 0.508357
+# Class: tank, mAP: 0.528150
+# Class: window, mAP: 0.581509
+# Class: zebra, mAP: 0.423639
+# Average test mAP:  0.5220832288193251""",
 }
 
 
 if __name__ == "__main__":
     map_dict = {key: extract_map_dict(text) for key, text in map_result.items() }
-    print(map_dict)
+
+    latex_table_text = dict_to_latex_table(map_dict)
+    print(latex_table_text)
+
     plot_map_lines(map_dict)
+

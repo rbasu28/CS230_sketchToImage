@@ -121,7 +121,8 @@ if __name__ == '__main__':
   dataloaders = Dataloaders(args.data, args.train_labels, args.train_embedding, args.test_labels)
   image_model = BasicModel().to(device)
   sketch_model = BasicModel().to(device) 
-  if args.model: load_checkpoint(args.model, image_model, sketch_model)  
+  if args.model: load_checkpoint(args.model, image_model, sketch_model)
+  np.random.seed(234)
   sketches, image_grids, test_mAP = evaluate(args.batch_size, dataloaders.get_test_dataloader, image_model, sketch_model, dataloaders.test_dict, k = args.num_images, num_display = args.num_sketches)
   print('Average test mAP: ', test_mAP)
 
